@@ -1,0 +1,3064 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#090d16" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PulseHIIT" />
+  <meta name="application-name" content="PulseHIIT" />
+  <title>PulseHIIT — Minuteur & Créateur de Séances</title>
+  <link id="pwa-icon-link" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%23090d16'/%3E%3Crect x='32' y='32' width='448' height='448' rx='96' fill='%2310b981' fill-opacity='0.14' stroke='%2310b981' stroke-width='16'/%3E%3Cpath d='M284 96L148 282h104l-24 134 136-186H260l24-134z' fill='%2310b981' stroke='%23ffffff' stroke-width='10' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link id="pwa-apple-icon" rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%23090d16'/%3E%3Cpath d='M284 96L148 282h104l-24 134 136-186H260l24-134z' fill='%2310b981'/%3E%3C/svg%3E" />
+  <link id="pwa-manifest-link" rel="manifest" />
+
+  <style>
+    :root {
+      --bg-main: #090d16;
+      --bg-card: #131b2e;
+      --bg-card-alt: #0d1322;
+      --border: #1e293b;
+      --border-light: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --emerald: #10b981;
+      --emerald-hover: #059669;
+      --blue: #3b82f6;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --indigo: #6366f1;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      min-height: 100%;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.45;
+      overflow-x: hidden;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    button, input, textarea {
+      font-family: inherit;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: transform 0.12s ease, background-color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* HEADER */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(9, 13, 22, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+    }
+
+    .header-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: var(--emerald);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: block;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header {
+      min-height: 40px;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-main);
+    }
+
+    .btn-header:hover {
+      border-color: var(--border-light);
+      background: #1a243d;
+    }
+
+    .btn-header-accent {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.12);
+      color: #6ee7b7;
+    }
+
+    /* NAVIGATION ONGLETS */
+    .nav-wrapper {
+      max-width: 1040px;
+      margin: 14px auto 0;
+      padding: 0 16px;
+    }
+
+    .tab-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      padding: 5px;
+      border-radius: var(--radius-lg);
+    }
+
+    .tab-btn {
+      min-height: 44px;
+      padding: 10px 8px;
+      border-radius: 13px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tab-btn.active {
+      background: var(--bg-card);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border-light);
+    }
+
+    /* MAIN CONTAINER */
+    .main-content {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 18px 16px 88px;
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .section-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* BUTTONS */
+    .btn-primary {
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      background: var(--emerald);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.88rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--emerald-hover);
+    }
+
+    .btn-secondary {
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      background: #1e293b;
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-secondary:hover {
+      background: #283548;
+    }
+
+    .btn-danger {
+      min-height: 42px;
+      padding: 9px 13px;
+      border-radius: var(--radius-md);
+      background: rgba(244, 63, 94, 0.14);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #fda4af;
+      font-weight: 600;
+      font-size: 0.82rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-danger:hover {
+      background: rgba(244, 63, 94, 0.25);
+    }
+
+    /* GRIDS & CARDS */
+    .workouts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    .workout-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .workout-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .workout-title {
+      font-size: 1.06rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .badge-duration {
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 9px;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      flex-shrink: 0;
+    }
+
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 6px;
+      text-align: center;
+    }
+
+    .metric-item + .metric-item {
+      border-left: 1px solid var(--border);
+    }
+
+    .metric-label {
+      display: block;
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-dim);
+      font-weight: 700;
+    }
+
+    .metric-val {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .ex-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .ex-pill {
+      font-size: 0.74rem;
+      padding: 4px 9px;
+      border-radius: 8px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .workout-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .icon-btn {
+      min-width: 42px;
+      min-height: 42px;
+      border-radius: var(--radius-md);
+      background: #1e293b;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn:hover {
+      color: #ffffff;
+      background: #2b3a52;
+    }
+
+    .icon-btn-del:hover {
+      background: rgba(244, 63, 94, 0.2);
+      color: #fb7185;
+    }
+
+    /* FORMS & INPUTS */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 11px 13px;
+      font-size: 0.92rem;
+      color: #ffffff;
+      outline: none;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--emerald);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 82px;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    @media (min-width: 640px) {
+      .settings-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    .builder-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    @media (min-width: 820px) {
+      .builder-layout {
+        grid-template-columns: 1.15fr 0.85fr;
+      }
+    }
+
+    .preset-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .preset-chip {
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .preset-chip:hover {
+      border-color: var(--emerald);
+      color: #ffffff;
+    }
+
+    .selected-ex-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 11px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .step-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .picker-list {
+      max-height: 430px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 2px;
+    }
+
+    .picker-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+    }
+
+    .picker-thumb {
+      width: 46px;
+      height: 46px;
+      border-radius: 9px;
+      background: #050811;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .picker-thumb img, .picker-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* LIBRARY GRID */
+    .library-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    @media (min-width: 820px) {
+      .library-layout {
+        grid-template-columns: 340px 1fr;
+        align-items: start;
+      }
+    }
+
+    .library-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+      gap: 14px;
+    }
+
+    .ex-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ex-card-media {
+      width: 100%;
+      height: 145px;
+      background: #060913;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .ex-card-media img, .ex-card-media video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .ex-card-body {
+      padding: 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .media-upload-box {
+      border: 2px dashed var(--border-light);
+      border-radius: var(--radius-md);
+      background: var(--bg-card-alt);
+      min-height: 130px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 14px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .media-upload-box:hover {
+      border-color: var(--emerald);
+    }
+
+    /* =========================================================================
+       MODALES (FERMETURE GARANTIE & RESPONSIVE MOBILE)
+       ========================================================================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(3, 6, 14, 0.84);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      max-height: 100dvh;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-panel {
+      background: #111827;
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 490px;
+      max-height: 90dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    }
+
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #111827;
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .modal-subtitle {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .modal-close-x {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 12px;
+      border-radius: 12px;
+      background: #1e293b;
+      border: 1px solid var(--border-light);
+      color: #f8fafc;
+      font-size: 0.82rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .modal-close-x:hover {
+      background: #334155;
+    }
+
+    .modal-body {
+      padding: 18px;
+      overflow-y: auto;
+      flex: 1;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      background: #111827;
+      flex-shrink: 0;
+      display: flex;
+      gap: 10px;
+    }
+
+    .backup-row {
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    /* =========================================================================
+       LECTEUR D'ENTRAÎNEMENT PLEIN ÉCRAN
+       ========================================================================= */
+    .player-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: #070b14;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      transition: background-color 0.35s ease;
+    }
+
+    .player-overlay.open {
+      display: flex;
+    }
+
+    .player-overlay.phase-prep {
+      background: radial-gradient(circle at top, #172554 0%, #070b14 68%);
+    }
+
+    .player-overlay.phase-work {
+      background: radial-gradient(circle at top, #064e3b 0%, #070b14 68%);
+    }
+
+    .player-overlay.phase-rest {
+      background: radial-gradient(circle at top, #78350f 0%, #070b14 68%);
+    }
+
+    .player-overlay.phase-done {
+      background: radial-gradient(circle at top, #312e81 0%, #070b14 68%);
+    }
+
+    .player-top {
+      padding: 12px 16px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .player-progress-track {
+      height: 5px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 0 16px;
+      max-width: 868px;
+      width: calc(100% - 32px);
+      align-self: center;
+    }
+
+    .player-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--emerald);
+      transition: width 0.2s linear;
+    }
+
+    .player-center {
+      flex: 1;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-evenly;
+      gap: 10px;
+    }
+
+    .phase-pill {
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .clock-container {
+      position: relative;
+      width: 196px;
+      height: 196px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .clock-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .clock-text-wrap {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .clock-digits {
+      font-size: 3.6rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .clock-unit {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 700;
+    }
+
+    .player-media-card {
+      width: 100%;
+      max-width: 520px;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .player-media-stage {
+      width: 100%;
+      height: 195px;
+      background: #04070f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .player-media-stage img, .player-media-stage video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .player-ex-info {
+      padding: 12px 14px;
+    }
+
+    .player-ex-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .player-ex-notes {
+      font-size: 0.84rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    .upnext-banner {
+      width: 100%;
+      max-width: 520px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .upnext-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: 10px;
+      background: #04070f;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .upnext-thumb img, .upnext-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .player-controls {
+      padding: 12px 16px 18px;
+      max-width: 560px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .ctrl-btn-round {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ctrl-btn-play {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--emerald);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 28px rgba(16, 185, 129, 0.4);
+    }
+
+    .wakelock-chip {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* TOAST */
+    .toast-container {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 80;
+      width: calc(100% - 28px);
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      padding: 12px 16px;
+      border-radius: 13px;
+      background: #064e3b;
+      border: 1px solid #10b981;
+      color: #ecfdf5;
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+      text-align: center;
+    }
+
+    .toast.error {
+      background: #881337;
+      border-color: #f43f5e;
+      color: #fff1f2;
+    }
+
+    .toast.info {
+      background: #1e293b;
+      border-color: #64748b;
+      color: #f8fafc;
+    }
+
+    @media (orientation: landscape) and (max-height: 520px) {
+      .player-center {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .clock-container {
+        width: 150px;
+        height: 150px;
+      }
+      .clock-digits {
+        font-size: 2.7rem;
+      }
+      .player-media-card {
+        max-width: 360px;
+      }
+      .player-media-stage {
+        height: 140px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NOTIFICATIONS TOAST -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- EN-TÊTE PRINCIPAL -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+        </div>
+        <div>
+          <div class="brand-title">PulseHIIT</div>
+          <span class="brand-sub">Minuteur & Séances Hors Ligne</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" id="btn-open-install" class="btn-header btn-header-accent" onclick="openModal('install-modal')">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          <span>Installer</span>
+        </button>
+        <button type="button" class="btn-header" onclick="openBackupModal()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>Sauvegarde</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION 3 ONGLETS -->
+  <nav class="nav-wrapper" aria-label="Navigation principale">
+    <div class="tab-bar">
+      <button type="button" id="tab-workouts" class="tab-btn active" onclick="switchTab('workouts')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Mes Séances</span>
+      </button>
+      <button type="button" id="tab-builder" class="tab-btn" onclick="switchTab('builder')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+        <span>Créateur</span>
+      </button>
+      <button type="button" id="tab-library" class="tab-btn" onclick="switchTab('library')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        <span>Bibliothèque</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- CONTENU PRINCIPAL -->
+  <main class="main-content">
+
+    <!-- =======================================================================
+         ONGLET 1 : MES SÉANCES
+         ======================================================================= -->
+    <section id="view-workouts">
+      <div class="section-head">
+        <div>
+          <h1 class="section-title">Mes Séances</h1>
+          <p class="section-desc">Choisissez un programme pour lancer le chronomètre plein écran.</p>
+        </div>
+        <button type="button" class="btn-primary" onclick="openNewWorkoutBuilder()">
+          <span>+ Nouvelle séance</span>
+        </button>
+      </div>
+
+      <div id="workouts-grid" class="workouts-grid"></div>
+    </section>
+
+    <!-- =======================================================================
+         ONGLET 2 : CRÉATEUR DE SÉANCES
+         ======================================================================= -->
+    <section id="view-builder" class="hidden">
+      <div class="section-head">
+        <div>
+          <h1 id="builder-heading" class="section-title">Créer une séance</h1>
+          <p class="section-desc">Configurez les intervalles et assemblez vos exercices dans l'ordre souhaité.</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span class="badge-duration mono" id="builder-total-duration">00:00</span>
+          <button type="button" class="btn-primary" onclick="saveBuilderWorkout()">Enregistrer la séance</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom: 18px;">
+        <div class="preset-row">
+          <button type="button" class="preset-chip" onclick="applyBuilderPreset(10, 40, 20, 4)">Circuit 40s / 20s × 4</button>
+          <button type="button" class="preset-chip" onclick="applyBuilderPreset(10, 20, 10, 4)">Genoux / Tabata 20s / 10s × 4</button>
+          <button type="button" class="preset-chip" onclick="applyBuilderPreset(10, 30, 15, 3)">HIIT 30s / 15s × 3</button>
+          <button type="button" class="preset-chip" onclick="applyBuilderPreset(10, 45, 15, 4)">Endurance 45s / 15s × 4</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="builder-name">Nom de la séance</label>
+          <input type="text" id="builder-name" class="form-input" placeholder="Ex : Cuisses & Chaîne Postérieure" />
+        </div>
+
+        <div class="settings-grid">
+          <div>
+            <label class="form-label" for="builder-prep">Préparation (s)</label>
+            <input type="number" id="builder-prep" class="form-input mono" min="0" max="120" value="10" oninput="updateBuilderDuration()" />
+          </div>
+          <div>
+            <label class="form-label" for="builder-work">Effort (s)</label>
+            <input type="number" id="builder-work" class="form-input mono" min="5" max="600" value="40" oninput="updateBuilderDuration()" />
+          </div>
+          <div>
+            <label class="form-label" for="builder-rest">Repos (s)</label>
+            <input type="number" id="builder-rest" class="form-input mono" min="0" max="300" value="20" oninput="updateBuilderDuration()" />
+          </div>
+          <div>
+            <label class="form-label" for="builder-rounds">Tours / Boucles</label>
+            <input type="number" id="builder-rounds" class="form-input mono" min="1" max="30" value="4" oninput="updateBuilderDuration()" />
+          </div>
+          <div>
+            <label class="form-label" for="builder-round-rest">Repos fin de tour (s)</label>
+            <input type="number" id="builder-round-rest" class="form-input mono" min="0" max="300" value="20" oninput="updateBuilderDuration()" />
+          </div>
+        </div>
+      </div>
+
+      <div class="builder-layout">
+        <!-- Exercices sélectionnés -->
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 style="font-size:0.98rem; font-weight:800;">Exercices du circuit (<span id="builder-selected-count">0</span>)</h2>
+            <button type="button" class="btn-secondary" style="min-height:34px; padding:5px 10px; font-size:0.76rem;" onclick="clearBuilderSelection()">Vider</button>
+          </div>
+          <div id="builder-selected-list"></div>
+        </div>
+
+        <!-- Pioche bibliothèque -->
+        <div class="card">
+          <h2 style="font-size:0.98rem; font-weight:800; margin-bottom:10px;">Ajouter depuis la bibliothèque</h2>
+          <div class="form-group">
+            <input type="search" id="builder-search" class="form-input" placeholder="Rechercher un exercice..." oninput="renderBuilderPicker()" />
+          </div>
+          <div id="builder-picker-list" class="picker-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         ONGLET 3 : BIBLIOTHÈQUE D'EXERCICES
+         ======================================================================= -->
+    <section id="view-library" class="hidden">
+      <div class="section-head">
+        <div>
+          <h1 class="section-title">Bibliothèque d'exercices</h1>
+          <p class="section-desc">Ajoutez vos propres vidéos, GIFs ou photos depuis votre téléphone.</p>
+        </div>
+      </div>
+
+      <div class="library-layout">
+        <!-- Formulaire création / édition exercice -->
+        <form id="exercise-form" class="card" onsubmit="handleSaveExercise(event)">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 id="ex-form-heading" style="font-size:1rem; font-weight:800;">Nouvel exercice</h2>
+            <button type="button" id="ex-form-reset-btn" class="btn-secondary hidden" style="min-height:32px; padding:4px 10px; font-size:0.75rem;" onclick="resetExerciseForm()">Annuler</button>
+          </div>
+
+          <input type="hidden" id="ex-edit-id" value="" />
+
+          <div class="form-group">
+            <label class="form-label" for="ex-name-input">Nom de l'exercice *</label>
+            <input type="text" id="ex-name-input" class="form-input" placeholder="Ex : Fentes Bulgares" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ex-notes-input">Consignes techniques</label>
+            <textarea id="ex-notes-input" class="form-textarea" placeholder="Placement du dos, rythme, points d'attention..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Image, GIF ou courte vidéo (depuis l'appareil)</label>
+            <label class="media-upload-box" for="ex-media-input">
+              <div id="ex-media-placeholder">
+                <p style="font-size:0.84rem; font-weight:700; color:#e2e8f0;">Appuyez pour choisir un fichier</p>
+                <p style="font-size:0.74rem; color:var(--text-dim); margin-top:4px;">MP4, WebM, GIF, JPG ou PNG</p>
+              </div>
+              <div id="ex-media-preview" class="hidden" style="width:100%; height:145px;"></div>
+            </label>
+            <input type="file" id="ex-media-input" accept="image/*,video/*" class="hidden" onchange="handleExerciseMediaChange(event)" />
+            <button type="button" id="ex-clear-media-btn" class="btn-danger hidden" style="width:100%; margin-top:8px;" onclick="clearExerciseFormMedia()">Retirer le média</button>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width:100%;">Enregistrer l'exercice</button>
+        </form>
+
+        <!-- Liste des exercices -->
+        <div>
+          <div class="form-group">
+            <input type="search" id="library-search" class="form-input" placeholder="Filtrer les exercices par nom ou consigne..." oninput="renderLibraryGrid()" />
+          </div>
+          <div id="library-grid" class="library-cards"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       LECTEUR D'ENTRAÎNEMENT PLEIN ÉCRAN
+       ========================================================================= -->
+  <div id="workout-player" class="player-overlay phase-prep">
+    <div class="player-top">
+      <button type="button" class="btn-header" onclick="requestExitWorkout()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        <span>Quitter</span>
+      </button>
+
+      <div style="text-align:center; min-width:0; flex:1;">
+        <div id="player-title" style="font-size:0.86rem; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Séance</div>
+        <div class="wakelock-chip" id="wakelock-badge">
+          <span id="wakelock-dot" style="width:6px; height:6px; border-radius:50%; background:#10b981;"></span>
+          <span id="wakelock-label">Écran actif</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:6px;">
+        <button type="button" id="btn-player-mute" class="icon-btn" title="Son" onclick="togglePlayerMute()"></button>
+        <button type="button" id="btn-player-fullscreen" class="btn-header" title="Plein écran" onclick="togglePlayerFullscreen()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+          <span id="fullscreen-label">Plein écran</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="player-progress-track">
+      <div id="player-progress-bar" class="player-progress-fill"></div>
+    </div>
+
+    <div class="player-center">
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;">
+        <span id="player-phase-badge" class="phase-pill">PRÉPARATION</span>
+        <span id="player-round-badge" class="mono" style="font-size:0.82rem; font-weight:800; color:#cbd5e1;">Tour 1/4 • Ex 1/4</span>
+        <span id="player-remaining-total" class="mono" style="font-size:0.8rem; color:var(--text-muted);">Reste 00:00</span>
+      </div>
+
+      <!-- Chronomètre circulaire géant -->
+      <div class="clock-container">
+        <svg class="clock-svg" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="8" />
+          <circle id="player-ring" cx="60" cy="60" r="52" fill="none" stroke="#3b82f6" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.72" stroke-dashoffset="0" />
+        </svg>
+        <div class="clock-text-wrap">
+          <div id="player-digits" class="clock-digits mono">10</div>
+          <div id="player-unit" class="clock-unit">secondes</div>
+        </div>
+      </div>
+
+      <!-- Encart À SUIVRE (visible pendant le repos / préparation) -->
+      <div id="player-upnext" class="upnext-banner hidden">
+        <div id="player-upnext-thumb" class="upnext-thumb"></div>
+        <div style="min-width:0; flex:1;">
+          <div style="font-size:0.68rem; font-weight:900; text-transform:uppercase; letter-spacing:0.06em; color:#fbbf24;">À suivre</div>
+          <div id="player-upnext-name" style="font-size:0.95rem; font-weight:800; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Prochain exercice</div>
+          <div id="player-upnext-notes" style="font-size:0.75rem; color:#fde68a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Consignes</div>
+        </div>
+      </div>
+
+      <!-- Carte média & consignes de l'exercice en cours -->
+      <div id="player-media-card" class="player-media-card">
+        <div id="player-media-stage" class="player-media-stage"></div>
+        <div class="player-ex-info">
+          <div id="player-ex-name" class="player-ex-name">Nom de l'exercice</div>
+          <p id="player-ex-notes" class="player-ex-notes">Consignes techniques</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contrôles inférieurs -->
+    <div class="player-controls">
+      <button type="button" class="ctrl-btn-round" title="Précédent" onclick="stepPlayer(-1)">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+      </button>
+      <button type="button" class="ctrl-btn-round" title="Réinitialiser" onclick="resetPlayer()">
+        <svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </button>
+      <button type="button" id="btn-player-playpause" class="ctrl-btn-play" title="Lecture / Pause" onclick="togglePlayPause()">
+        <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </button>
+      <button type="button" class="ctrl-btn-round" title="Passer l'exercice" onclick="stepPlayer(1)">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODALE 1 : SAUVEGARDE & TRANSFERT JSON
+       ========================================================================= -->
+  <div id="backup-modal" class="modal-backdrop" onclick="handleBackdropClose(event, 'backup-modal')">
+    <div class="modal-panel" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Sauvegarde & Transfert</div>
+          <div id="backup-stats" class="modal-subtitle">Stockage local hors ligne</div>
+        </div>
+        <button type="button" class="modal-close-x" onclick="closeModal('backup-modal')">✕ Fermer</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size:0.82rem; color:var(--text-muted);">
+          Vos séances, exercices et médias sont enregistrés localement. Exportez un fichier <strong>.json</strong> pour les conserver dans vos téléchargements ou les transférer.
+        </p>
+
+        <div class="backup-row">
+          <div style="flex:1; min-width:180px;">
+            <div style="font-size:0.88rem; font-weight:700;">Exporter mes données (JSON)</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Télécharge toutes vos séances et médias.</div>
+          </div>
+          <button type="button" id="btn-export-json" class="btn-primary" onclick="exportBackupJSON()">Exporter</button>
+        </div>
+
+        <div class="backup-row">
+          <div style="flex:1; min-width:180px;">
+            <div style="font-size:0.88rem; font-weight:700;">Importer des données (JSON)</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Restaure ou fusionne une sauvegarde.</div>
+          </div>
+          <label class="btn-secondary" style="cursor:pointer;">
+            <span>Importer</span>
+            <input type="file" id="input-import-json" accept=".json,application/json" class="hidden" onchange="importBackupJSON(event)" />
+          </label>
+        </div>
+
+        <div class="backup-row">
+          <div style="flex:1; min-width:180px;">
+            <div style="font-size:0.88rem; font-weight:700; color:#fcd34d;">Réinitialiser les 5 séances par défaut</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Recharge les 5 programmes et 22 exercices d'origine.</div>
+          </div>
+          <button type="button" class="btn-danger" onclick="restoreDefaultProgram()">Réinitialiser</button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" style="width:100%;" onclick="closeModal('backup-modal')">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODALE 2 : GUIDE D'INSTALLATION ANDROID
+       ========================================================================= -->
+  <div id="install-modal" class="modal-backdrop" onclick="handleBackdropClose(event, 'install-modal')">
+    <div class="modal-panel" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Installer sur Android</div>
+          <div class="modal-subtitle">Accès direct hors ligne depuis l'écran d'accueil</div>
+        </div>
+        <button type="button" class="modal-close-x" onclick="closeModal('install-modal')">✕ Fermer</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="native-install-banner" class="hidden" style="padding:12px; border-radius:12px; background:rgba(16,185,129,0.14); border:1px solid rgba(16,185,129,0.4);">
+          <p style="font-size:0.82rem; margin-bottom:10px; color:#a7f3d0;">Installation directe disponible sur votre appareil :</p>
+          <button type="button" class="btn-primary" style="width:100%;" onclick="triggerNativePWAInstall()">Installer PulseHIIT maintenant</button>
+        </div>
+
+        <div style="background:var(--bg-card-alt); border:1px solid var(--border); border-radius:14px; padding:14px; font-size:0.83rem; display:flex; flex-direction:column; gap:10px;">
+          <div><strong>1.</strong> Ouvrez ce fichier <code>hiit-trainer.html</code> directement dans <strong>Google Chrome</strong> sur votre téléphone Android.</div>
+          <div><strong>2.</strong> Appuyez sur le menu <strong>⋮</strong> (3 points en haut à droite de Chrome).</div>
+          <div><strong>3.</strong> Choisissez <strong>« Ajouter à l'écran d'accueil »</strong> (ou <em>Installer l'application</em>) puis validez.</div>
+          <div style="font-size:0.76rem; color:#fcd34d; background:rgba(245,158,11,0.12); padding:9px; border-radius:9px;">
+            Pendant vos séances, utilisez le bouton <strong>Plein écran</strong> en haut à droite du chronomètre : l'écran restera automatiquement allumé tant que le minuteur tourne.
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" style="width:100%;" onclick="closeModal('install-modal')">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODALE 3 : CONFIRMATION PERSONNALISÉE
+       ========================================================================= -->
+  <div id="confirm-modal" class="modal-backdrop" onclick="handleConfirmBackdrop(event)">
+    <div class="modal-panel" style="max-width:400px;" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div id="confirm-title" class="modal-title">Confirmation</div>
+        <button type="button" class="modal-close-x" onclick="resolveCustomConfirm(false)">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-text" style="font-size:0.88rem; color:#cbd5e1;">Confirmer cette action ?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" style="flex:1;" onclick="resolveCustomConfirm(false)">Annuler</button>
+        <button type="button" id="confirm-ok-btn" class="btn-danger" style="flex:1;" onclick="resolveCustomConfirm(true)">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * =========================================================================
+     * 1. STOCKAGE HYBRIDE FIABLE (IndexedDB avec repli automatique en mémoire)
+     * =========================================================================
+     */
+    const DB_NAME = 'PulseHIIT_V2_DB';
+    const DB_VERSION = 1;
+    let idb = null;
+    let useMemoryFallback = false;
+
+    let exercisesStore = [];
+    let workoutsStore = [];
+    let activeObjectUrls = [];
+
+    function openDatabase() {
+      return new Promise((resolve) => {
+        try {
+          if (!('indexedDB' in window)) {
+            useMemoryFallback = true;
+            resolve(null);
+            return;
+          }
+          const req = indexedDB.open(DB_NAME, DB_VERSION);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('exercises')) {
+              db.createObjectStore('exercises', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('workouts')) {
+              db.createObjectStore('workouts', { keyPath: 'id' });
+            }
+          };
+          req.onsuccess = (e) => {
+            idb = e.target.result;
+            resolve(idb);
+          };
+          req.onerror = () => {
+            useMemoryFallback = true;
+            resolve(null);
+          };
+        } catch (err) {
+          useMemoryFallback = true;
+          resolve(null);
+        }
+      });
+    }
+
+    function storeGetAll(storeName) {
+      return new Promise((resolve) => {
+        if (useMemoryFallback || !idb) {
+          try {
+            const raw = localStorage.getItem('pulsehiit_' + storeName);
+            resolve(raw ? JSON.parse(raw) : []);
+          } catch (e) {
+            resolve(storeName === 'exercises' ? exercisesStore : workoutsStore);
+          }
+          return;
+        }
+        try {
+          const tx = idb.transaction(storeName, 'readonly');
+          const req = tx.objectStore(storeName).getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    }
+
+    function storePut(storeName, item) {
+      return new Promise((resolve) => {
+        if (useMemoryFallback || !idb) {
+          const target = storeName === 'exercises' ? exercisesStore : workoutsStore;
+          const idx = target.findIndex((x) => x.id === item.id);
+          if (idx >= 0) target[idx] = item;
+          else target.push(item);
+          try {
+            localStorage.setItem('pulsehiit_' + storeName, JSON.stringify(target));
+          } catch (e) {}
+          resolve();
+          return;
+        }
+        try {
+          const tx = idb.transaction(storeName, 'readwrite');
+          tx.objectStore(storeName).put(item);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        } catch (e) {
+          resolve();
+        }
+      });
+    }
+
+    function storeDelete(storeName, id) {
+      return new Promise((resolve) => {
+        if (useMemoryFallback || !idb) {
+          if (storeName === 'exercises') exercisesStore = exercisesStore.filter((x) => x.id !== id);
+          else workoutsStore = workoutsStore.filter((x) => x.id !== id);
+          try {
+            localStorage.setItem('pulsehiit_' + storeName, JSON.stringify(storeName === 'exercises' ? exercisesStore : workoutsStore));
+          } catch (e) {}
+          resolve();
+          return;
+        }
+        try {
+          const tx = idb.transaction(storeName, 'readwrite');
+          tx.objectStore(storeName).delete(id);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        } catch (e) {
+          resolve();
+        }
+      });
+    }
+
+    function storeClear(storeName) {
+      return new Promise((resolve) => {
+        if (useMemoryFallback || !idb) {
+          if (storeName === 'exercises') exercisesStore = [];
+          else workoutsStore = [];
+          try {
+            localStorage.removeItem('pulsehiit_' + storeName);
+          } catch (e) {}
+          resolve();
+          return;
+        }
+        try {
+          const tx = idb.transaction(storeName, 'readwrite');
+          tx.objectStore(storeName).clear();
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        } catch (e) {
+          resolve();
+        }
+      });
+    }
+
+    /**
+     * =========================================================================
+     * 2. ILLUSTRATIONS SVG VECTORIELLES & 5 SÉANCES PRÉ-CHARGÉES (22 EXERCICES)
+     * =========================================================================
+     */
+    function buildExerciseSvgDataUrl(poseKey, title) {
+      const poses = {
+        bulgarian: {
+          color: '#10b981',
+          svg: '<circle cx="170" cy="70" r="18" fill="#10b981"/><path d="M170 94 L170 156 L124 185 L124 236 M170 156 L225 198 L272 182"/><rect x="260" y="182" width="76" height="54" rx="6" fill="#1e293b" stroke="#334155" stroke-width="3"/>'
+        },
+        bridge: {
+          color: '#10b981',
+          svg: '<circle cx="96" cy="204" r="17" fill="#10b981"/><path d="M118 214 L204 160 L246 202 L294 202 M204 160 L294 102"/><rect x="242" y="202" width="76" height="36" rx="6" fill="#1e293b" stroke="#334155" stroke-width="3"/>'
+        },
+        pistol: {
+          color: '#10b981',
+          svg: '<circle cx="164" cy="104" r="18" fill="#10b981"/><path d="M164 128 L154 182 L195 202 L175 238 M154 182 L252 178"/><rect x="106" y="182" width="54" height="56" rx="6" fill="#1e293b" stroke="#334155" stroke-width="3"/>'
+        },
+        legcurl: {
+          color: '#10b981',
+          svg: '<circle cx="102" cy="196" r="17" fill="#10b981"/><path d="M124 208 L224 210 L262 150"/><line x1="44" y1="226" x2="356" y2="226" stroke="#334155" stroke-width="4"/>'
+        },
+        copenhagen: {
+          color: '#38bdf8',
+          svg: '<circle cx="108" cy="148" r="17" fill="#38bdf8"/><path d="M130 158 L284 178 M144 162 L134 218 M236 172 L216 218"/><rect x="276" y="176" width="66" height="46" rx="6" fill="#1e293b" stroke="#334155" stroke-width="3"/>'
+        },
+        psoas: {
+          color: '#38bdf8',
+          svg: '<circle cx="112" cy="198" r="17" fill="#38bdf8"/><path d="M134 208 L215 208 L254 150 M215 208 L296 208"/><line x1="252" y1="156" x2="292" y2="206" stroke="#f43f5e" stroke-width="4" stroke-dasharray="5 4"/>'
+        },
+        shuffle: {
+          color: '#38bdf8',
+          svg: '<circle cx="200" cy="74" r="18" fill="#38bdf8"/><path d="M200 98 L200 156 L156 186 L148 236 M200 156 L244 186 L252 236"/><line x1="150" y1="215" x2="250" y2="215" stroke="#f43f5e" stroke-width="5"/><path d="M114 140 L84 140 M286 140 L316 140" stroke="#38bdf8" stroke-width="6"/>'
+        },
+        hipcircle: {
+          color: '#38bdf8',
+          svg: '<circle cx="120" cy="145" r="17" fill="#38bdf8"/><path d="M142 152 L236 152 L236 220 M154 152 L154 220 M236 152 L286 128"/><circle cx="286" cy="128" r="24" stroke="#38bdf8" stroke-width="3" stroke-dasharray="5 5"/>'
+        },
+        deadbug: {
+          color: '#a855f7',
+          svg: '<circle cx="104" cy="202" r="17" fill="#a855f7"/><path d="M126 210 L226 210 L226 144 L278 144 M154 210 L154 132 M226 210 L292 205"/>'
+        },
+        sideplank: {
+          color: '#a855f7',
+          svg: '<circle cx="110" cy="142" r="17" fill="#a855f7"/><path d="M132 154 L296 216 M144 158 L134 216 L162 216"/>'
+        },
+        pallof: {
+          color: '#a855f7',
+          svg: '<circle cx="184" cy="74" r="18" fill="#a855f7"/><path d="M184 98 L184 166 L160 236 M184 166 L208 236 M184 124 L246 124"/><line x1="246" y1="124" x2="334" y2="124" stroke="#f43f5e" stroke-width="4" stroke-dasharray="6 4"/><rect x="330" y="94" width="16" height="60" rx="3" fill="#475569"/>'
+        },
+        birddog: {
+          color: '#a855f7',
+          svg: '<circle cx="144" cy="145" r="17" fill="#a855f7"/><path d="M166 152 L246 152 L246 220 M172 152 L172 220 M166 146 L94 142 M246 152 L318 146"/>'
+        },
+        wallsit: {
+          color: '#f59e0b',
+          svg: '<rect x="114" y="62" width="16" height="176" rx="3" fill="#334155"/><circle cx="152" cy="108" r="18" fill="#f59e0b"/><path d="M145 132 L145 182 L206 182 L206 236"/><path d="M196 236 L224 226" stroke="#fbbf24" stroke-width="8"/>'
+        },
+        tibialis: {
+          color: '#f59e0b',
+          svg: '<rect x="108" y="62" width="16" height="176" rx="3" fill="#334155"/><circle cx="144" cy="82" r="18" fill="#f59e0b"/><path d="M138 106 L142 168 L188 236"/><path d="M188 236 L214 222" stroke="#fbbf24" stroke-width="8"/>'
+        },
+        sissy: {
+          color: '#f59e0b',
+          svg: '<rect x="94" y="62" width="16" height="176" rx="3" fill="#334155"/><circle cx="148" cy="105" r="18" fill="#f59e0b"/><path d="M155 128 L182 178 L218 205 L195 236 M158 145 L112 145"/>'
+        },
+        foot: {
+          color: '#ec4899',
+          svg: '<path d="M110 195 Q145 145 195 175 L285 195 Q298 208 278 214 L195 204 Q158 184 128 214 Q102 214 110 195 Z" fill="#ec4899" fill-opacity="0.25" stroke="#ec4899" stroke-width="8"/><path d="M155 198 Q182 178 210 198" stroke="#f472b6" stroke-width="5"/>'
+        },
+        clock: {
+          color: '#ec4899',
+          svg: '<circle cx="200" cy="150" r="78" stroke="#334155" stroke-width="4" stroke-dasharray="6 6"/><circle cx="200" cy="84" r="16" fill="#ec4899"/><path d="M200 105 L200 156 L200 205 M200 156 L248 175"/>'
+        }
+      };
+
+      const item = poses[poseKey] || poses.bulgarian;
+      const safeLabel = (title || '').replace(/[<>&'"]/g, '').toUpperCase().slice(0, 32);
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300"><rect width="400" height="300" fill="#090d16"/><circle cx="200" cy="142" r="106" fill="${item.color}" fill-opacity="0.09"/><g stroke="${item.color}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none">${item.svg}</g><text x="200" y="278" font-family="sans-serif" font-size="13" font-weight="bold" fill="#94a3b8" text-anchor="middle">${safeLabel}</text></svg>`;
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+
+    function buildDefaultCatalog() {
+      const baseTime = Date.now();
+      const exercises = [
+        // 1. Cuisses & Chaîne Postérieure
+        { id: 'ex-1-1', name: 'Fentes Bulgares', notes: 'Pied arrière surélevé sur banc ou chaise. Descends le genou arrière vers le sol en gardant le buste droit et le genou avant dans l’axe.', mediaDataUrl: buildExerciseSvgDataUrl('bulgarian', 'Fentes Bulgares'), mediaType: 'image/svg+xml', createdAt: baseTime - 10 },
+        { id: 'ex-1-2', name: 'Glute Bridge à 1 jambe (surélevé)', notes: 'Talon d’appui sur un support surélevé, autre jambe tendue. Pousse fort dans le talon pour monter le bassin sans cambrer.', mediaDataUrl: buildExerciseSvgDataUrl('bridge', 'Glute Bridge 1 Jambe'), mediaType: 'image/svg+xml', createdAt: baseTime - 20 },
+        { id: 'ex-1-3', name: 'Pistol Squat sur chaise', notes: 'En équilibre sur une jambe devant une chaise, descends avec contrôle jusqu’à effleurer l’assise puis remonte en poussant sur tout le pied.', mediaDataUrl: buildExerciseSvgDataUrl('pistol', 'Pistol Squat sur Chaise'), mediaType: 'image/svg+xml', createdAt: baseTime - 30 },
+        { id: 'ex-1-4', name: 'Leg Curl glissé au sol', notes: 'Allongé sur le dos, talons sur serviette ou patins, hanches décollées. Tends les jambes en freinant puis ramène fort les talons.', mediaDataUrl: buildExerciseSvgDataUrl('legcurl', 'Leg Curl Glissé'), mediaType: 'image/svg+xml', createdAt: baseTime - 40 },
+
+        // 2. Adducteurs & Hanches
+        { id: 'ex-2-1', name: 'Planche de Copenhague', notes: 'En gainage latéral sur l’avant-bras, jambe supérieure posée sur un banc/chaise. Maintiens le bassin haut et contracte l’intérieur de la cuisse.', mediaDataUrl: buildExerciseSvgDataUrl('copenhagen', 'Planche de Copenhague'), mediaType: 'image/svg+xml', createdAt: baseTime - 50 },
+        { id: 'ex-2-2', name: 'Psoas March (avec élastique)', notes: 'Allongé sur le dos, élastique autour des pieds, lombaires plaquées au sol. Ramène un genou vers la poitrine contre la résistance.', mediaDataUrl: buildExerciseSvgDataUrl('psoas', 'Psoas March Élastique'), mediaType: 'image/svg+xml', createdAt: baseTime - 60 },
+        { id: 'ex-2-3', name: 'Glute Band Lateral Shuffle', notes: 'Élastique aux genoux ou chevilles, en quart de squat. Pas chassés latéraux en gardant une tension constante et les pieds parallèles.', mediaDataUrl: buildExerciseSvgDataUrl('shuffle', 'Glute Band Shuffle'), mediaType: 'image/svg+xml', createdAt: baseTime - 70 },
+        { id: 'ex-2-4', name: 'Quadruped Hip Circles', notes: 'À quatre pattes, dos neutre et abdos gainés. Dessine de grands cercles lents avec un genou sans laisser vriller le bassin.', mediaDataUrl: buildExerciseSvgDataUrl('hipcircle', 'Quadruped Hip Circles'), mediaType: 'image/svg+xml', createdAt: baseTime - 80 },
+
+        // 3. Abdos & Anti-Rotation
+        { id: 'ex-3-1', name: 'Dead Bug', notes: 'Allongé sur le dos, lombaires fermement plaquées au sol. Allonge simultanément un bras et la jambe opposée en expirant.', mediaDataUrl: buildExerciseSvgDataUrl('deadbug', 'Dead Bug'), mediaType: 'image/svg+xml', createdAt: baseTime - 90 },
+        { id: 'ex-3-2', name: 'Gainage latéral', notes: 'En appui sur l’avant-bras (coude sous l’épaule) et le bord externe du pied. Garde le corps parfaitement aligné sans affaisser les hanches.', mediaDataUrl: buildExerciseSvgDataUrl('sideplank', 'Gainage Latéral'), mediaType: 'image/svg+xml', createdAt: baseTime - 100 },
+        { id: 'ex-3-3', name: 'Pallof Press (avec élastique)', notes: 'Debout de profil à l’ancrage, élastique tenu devant le sternum. Tends les bras devant toi en résistant à la rotation du buste.', mediaDataUrl: buildExerciseSvgDataUrl('pallof', 'Pallof Press Élastique'), mediaType: 'image/svg+xml', createdAt: baseTime - 110 },
+        { id: 'ex-3-4', name: 'Bird-Dog', notes: 'À quatre pattes, bassin parallèle au sol. Tends un bras devant et la jambe opposée derrière en marquant une pause de 2 secondes.', mediaDataUrl: buildExerciseSvgDataUrl('birddog', 'Bird-Dog'), mediaType: 'image/svg+xml', createdAt: baseTime - 120 },
+
+        // 4. Genoux
+        { id: 'ex-4-1', name: 'Chaise + élévation des talons', notes: 'Dos plaqué au mur en position de chaise (genoux à 90°). Décolle les talons pour monter sur les pointes et maintiens.', mediaDataUrl: buildExerciseSvgDataUrl('wallsit', 'Chaise + Talons'), mediaType: 'image/svg+xml', createdAt: baseTime - 130 },
+        { id: 'ex-4-2', name: 'Chaise + élévation des pointes', notes: 'En position de chaise dos au mur, garde les talons ancrés au sol et relève au maximum les pointes de pieds vers les tibias.', mediaDataUrl: buildExerciseSvgDataUrl('wallsit', 'Chaise + Pointes'), mediaType: 'image/svg+xml', createdAt: baseTime - 140 },
+        { id: 'ex-4-3', name: 'Tibialis Raise au mur', notes: 'Fesses et dos au mur, pieds avancés devant toi, jambes tendues. Relève les pointes de pieds le plus haut possible vers les tibias.', mediaDataUrl: buildExerciseSvgDataUrl('tibialis', 'Tibialis Raise au Mur'), mediaType: 'image/svg+xml', createdAt: baseTime - 150 },
+        { id: 'ex-4-4', name: 'Chaise + extension de jambe', notes: 'En position de chaise dos au mur, tends une jambe à l’horizontale en verrouillant le quadriceps sans basculer le bassin.', mediaDataUrl: buildExerciseSvgDataUrl('wallsit', 'Chaise + Extension'), mediaType: 'image/svg+xml', createdAt: baseTime - 160 },
+        { id: 'ex-4-5', name: 'Extensions mollets', notes: 'Debout, monte le plus haut possible sur la pointe des pieds en marquant une pause en haut, puis redescends avec contrôle.', mediaDataUrl: buildExerciseSvgDataUrl('tibialis', 'Extensions Mollets'), mediaType: 'image/svg+xml', createdAt: baseTime - 170 },
+        { id: 'ex-4-6', name: 'Sissy Squat assisté au mur', notes: 'Une main en appui léger au mur. Monte sur les pointes et avance les genoux vers l’avant tout en inclinant le buste en arrière.', mediaDataUrl: buildExerciseSvgDataUrl('sissy', 'Sissy Squat Assisté'), mediaType: 'image/svg+xml', createdAt: baseTime - 180 },
+
+        // 5. Pieds & Chevilles
+        { id: 'ex-5-1', name: 'Short Foot (Pied court)', notes: 'Pied nu au sol, raccourcis le pied en rapprochant la base du gros orteil vers le talon pour creuser la voûte sans griffer les orteils.', mediaDataUrl: buildExerciseSvgDataUrl('foot', 'Short Foot (Pied Court)'), mediaType: 'image/svg+xml', createdAt: baseTime - 190 },
+        { id: 'ex-5-2', name: 'Équilibre unipodal + Horloge', notes: 'En équilibre sur un pied (voûte active), touche délicatement le sol autour de toi à 12h, 3h, 6h et 9h avec l’autre pied.', mediaDataUrl: buildExerciseSvgDataUrl('clock', 'Équilibre + Horloge'), mediaType: 'image/svg+xml', createdAt: baseTime - 200 },
+        { id: 'ex-5-3', name: 'Alternance Pointes / Talons', notes: 'Debout pieds largeur de bassin, déroule le pied pour monter haut sur les pointes, puis bascule sur les talons en relevant les orteils.', mediaDataUrl: buildExerciseSvgDataUrl('foot', 'Pointes / Talons'), mediaType: 'image/svg+xml', createdAt: baseTime - 210 },
+        { id: 'ex-5-4', name: 'Ramassage de serviette (ou éversion à l\'élastique)', notes: 'Assis pied nu sur une serviette au sol, ramène le tissu avec les orteils — ou réalise des éversions de cheville contre un élastique.', mediaDataUrl: buildExerciseSvgDataUrl('foot', 'Serviette / Éversion'), mediaType: 'image/svg+xml', createdAt: baseTime - 220 }
+      ];
+
+      const workouts = [
+        { id: 'wk-1', name: '1. Cuisses & Chaîne Postérieure', prepTime: 10, workTime: 40, restTime: 20, rounds: 4, roundRestTime: 20, exerciseIds: ['ex-1-1', 'ex-1-2', 'ex-1-3', 'ex-1-4'], createdAt: baseTime - 10 },
+        { id: 'wk-2', name: '2. Adducteurs & Hanches', prepTime: 10, workTime: 40, restTime: 20, rounds: 4, roundRestTime: 20, exerciseIds: ['ex-2-1', 'ex-2-2', 'ex-2-3', 'ex-2-4'], createdAt: baseTime - 20 },
+        { id: 'wk-3', name: '3. Abdos & Anti-Rotation', prepTime: 10, workTime: 40, restTime: 20, rounds: 4, roundRestTime: 20, exerciseIds: ['ex-3-1', 'ex-3-2', 'ex-3-3', 'ex-3-4'], createdAt: baseTime - 30 },
+        { id: 'wk-4', name: '4. Genoux', prepTime: 10, workTime: 20, restTime: 10, rounds: 4, roundRestTime: 15, exerciseIds: ['ex-4-1', 'ex-4-2', 'ex-4-3', 'ex-4-4', 'ex-4-5', 'ex-4-6'], createdAt: baseTime - 40 },
+        { id: 'wk-5', name: '5. Pieds & Chevilles', prepTime: 10, workTime: 40, restTime: 20, rounds: 4, roundRestTime: 20, exerciseIds: ['ex-5-1', 'ex-5-2', 'ex-5-3', 'ex-5-4'], createdAt: baseTime - 50 }
+      ];
+
+      return { exercises, workouts };
+    }
+
+    async function seedIfEmpty() {
+      const existingEx = await storeGetAll('exercises');
+      const existingWk = await storeGetAll('workouts');
+      if (existingEx.length === 0 && existingWk.length === 0) {
+        const { exercises, workouts } = buildDefaultCatalog();
+        for (const ex of exercises) await storePut('exercises', ex);
+        for (const wk of workouts) await storePut('workouts', wk);
+      }
+    }
+
+    async function reloadStores() {
+      exercisesStore = await storeGetAll('exercises');
+      workoutsStore = await storeGetAll('workouts');
+      exercisesStore.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      workoutsStore.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    }
+
+    /**
+     * =========================================================================
+     * 3. OUTILS UI, MÉDIAS & NOTIFICATIONS
+     * =========================================================================
+     */
+    function makeId(prefix) {
+      return prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatMMSS(sec) {
+      const s = Math.max(0, Math.round(sec));
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+    }
+
+    function computeWorkoutSeconds(wk) {
+      const count = (wk.exerciseIds || []).length;
+      if (count === 0) return 0;
+      const prep = Number(wk.prepTime) || 0;
+      const work = Number(wk.workTime) || 0;
+      const rest = Number(wk.restTime) || 0;
+      const rounds = Math.max(1, Number(wk.rounds) || 1);
+      const roundRest = Number(wk.roundRestTime) || 0;
+      const singleRound = (count * work) + (Math.max(0, count - 1) * rest);
+      return prep + (singleRound * rounds) + (Math.max(0, rounds - 1) * roundRest);
+    }
+
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      el.className = 'toast' + (type === 'error' ? ' error' : type === 'info' ? ' info' : '');
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.25s ease';
+        setTimeout(() => el.remove(), 260);
+      }, 2800);
+    }
+
+    function releaseTrackedUrls() {
+      while (activeObjectUrls.length > 0) {
+        try {
+          URL.revokeObjectURL(activeObjectUrls.pop());
+        } catch (e) {}
+      }
+    }
+
+    function buildMediaNode(ex) {
+      if (!ex) {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'color:#475569; font-size:0.8rem;';
+        empty.textContent = 'Aucun visuel';
+        return empty;
+      }
+
+      let srcUrl = '';
+      let mime = ex.mediaType || '';
+
+      if (ex.mediaBlob instanceof Blob) {
+        srcUrl = URL.createObjectURL(ex.mediaBlob);
+        activeObjectUrls.push(srcUrl);
+        mime = mime || ex.mediaBlob.type || '';
+      } else if (ex.mediaDataUrl) {
+        srcUrl = ex.mediaDataUrl;
+      }
+
+      if (!srcUrl) {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'color:#475569; font-size:0.8rem;';
+        empty.textContent = 'Aucun visuel';
+        return empty;
+      }
+
+      if (mime.startsWith('video/') || srcUrl.startsWith('data:video/')) {
+        const vid = document.createElement('video');
+        vid.src = srcUrl;
+        vid.autoplay = true;
+        vid.loop = true;
+        vid.muted = true;
+        vid.playsInline = true;
+        vid.setAttribute('playsinline', '');
+        vid.setAttribute('muted', '');
+        return vid;
+      }
+
+      const img = document.createElement('img');
+      img.src = srcUrl;
+      img.alt = ex.name || 'Exercice';
+      return img;
+    }
+
+    /**
+     * =========================================================================
+     * 4. GESTION DES MODALES (OUVERTURE, FERMETURE, ÉCHAP & BOUTON RETOUR)
+     * =========================================================================
+     */
+    let confirmCallback = null;
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('open');
+      try {
+        history.pushState({ modalId: id }, '');
+      } catch (e) {}
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('open');
+    }
+
+    function closeAllModals() {
+      document.querySelectorAll('.modal-backdrop.open').forEach((m) => m.classList.remove('open'));
+      if (confirmCallback) {
+        const cb = confirmCallback;
+        confirmCallback = null;
+        cb(false);
+      }
+    }
+
+    function handleBackdropClose(event, id) {
+      if (event.target && event.target.id === id) {
+        closeModal(id);
+      }
+    }
+
+    function askConfirm(title, text, okText = 'Supprimer') {
+      return new Promise((resolve) => {
+        document.getElementById('confirm-title').textContent = title;
+        document.getElementById('confirm-text').textContent = text;
+        document.getElementById('confirm-ok-btn').textContent = okText;
+        confirmCallback = resolve;
+        openModal('confirm-modal');
+      });
+    }
+
+    function resolveCustomConfirm(answer) {
+      closeModal('confirm-modal');
+      if (confirmCallback) {
+        const cb = confirmCallback;
+        confirmCallback = null;
+        cb(answer);
+      }
+    }
+
+    function handleConfirmBackdrop(event) {
+      if (event.target && event.target.id === 'confirm-modal') {
+        resolveCustomConfirm(false);
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAllModals();
+      }
+    });
+
+    window.addEventListener('popstate', () => {
+      const openModals = document.querySelectorAll('.modal-backdrop.open');
+      if (openModals.length > 0) {
+        closeAllModals();
+        return;
+      }
+      const player = document.getElementById('workout-player');
+      if (player && player.classList.contains('open')) {
+        exitWorkoutImmediate();
+      }
+    });
+
+    /**
+     * =========================================================================
+     * 5. NAVIGATION ENTRE ONGLETS
+     * =========================================================================
+     */
+    function switchTab(tab) {
+      releaseTrackedUrls();
+      ['workouts', 'builder', 'library'].forEach((name) => {
+        document.getElementById('view-' + name).classList.toggle('hidden', name !== tab);
+        document.getElementById('tab-' + name).classList.toggle('active', name === tab);
+      });
+
+      if (tab === 'workouts') renderWorkoutsView();
+      if (tab === 'builder') {
+        renderBuilderSelected();
+        renderBuilderPicker();
+        updateBuilderDuration();
+      }
+      if (tab === 'library') renderLibraryGrid();
+    }
+
+    /**
+     * =========================================================================
+     * 6. ONGLET 1 : MES SÉANCES
+     * =========================================================================
+     */
+    function renderWorkoutsView() {
+      const grid = document.getElementById('workouts-grid');
+      grid.innerHTML = '';
+
+      if (workoutsStore.length === 0) {
+        grid.innerHTML = `
+          <div class="card" style="grid-column:1/-1; text-align:center; padding:36px 18px;">
+            <p style="font-weight:700; margin-bottom:6px;">Aucune séance disponible</p>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:16px;">Créez une séance ou rechargez les 5 séances par défaut.</p>
+            <button type="button" class="btn-primary" onclick="openNewWorkoutBuilder()">+ Créer une séance</button>
+          </div>
+        `;
+        return;
+      }
+
+      workoutsStore.forEach((wk) => {
+        const totalSec = computeWorkoutSeconds(wk);
+        const exList = (wk.exerciseIds || [])
+          .map((id) => exercisesStore.find((e) => e.id === id))
+          .filter(Boolean);
+
+        const pillsHtml = exList.map((e) => `<span class="ex-pill">${escapeHtml(e.name)}</span>`).join('');
+
+        const card = document.createElement('div');
+        card.className = 'card workout-card';
+        card.innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div class="workout-card-top">
+              <h2 class="workout-title">${escapeHtml(wk.name)}</h2>
+              <span class="badge-duration mono">${formatMMSS(totalSec)}</span>
+            </div>
+
+            <div class="metrics-bar">
+              <div class="metric-item">
+                <span class="metric-label">Effort / Repos</span>
+                <span class="metric-val mono">${wk.workTime}s / ${wk.restTime}s</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Tours</span>
+                <span class="metric-val mono" style="color:#c084fc;">${wk.rounds}×</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Exercices</span>
+                <span class="metric-val mono" style="color:#60a5fa;">${exList.length}</span>
+              </div>
+            </div>
+
+            <div class="ex-pills">${pillsHtml || '<span style="font-size:0.78rem; color:#fb7185;">Aucun exercice associé</span>'}</div>
+          </div>
+
+          <div class="workout-actions">
+            <button type="button" class="btn-primary" style="flex:1;" onclick="launchWorkout('${wk.id}')">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <span>Lancer</span>
+            </button>
+            <button type="button" class="icon-btn" title="Modifier" onclick="openEditWorkoutBuilder('${wk.id}')">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <button type="button" class="icon-btn" title="Dupliquer" onclick="duplicateWorkoutItem('${wk.id}')">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            </button>
+            <button type="button" class="icon-btn icon-btn-del" title="Supprimer" onclick="removeWorkoutItem('${wk.id}')">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function duplicateWorkoutItem(id) {
+      const orig = workoutsStore.find((w) => w.id === id);
+      if (!orig) return;
+      const clone = {
+        ...orig,
+        id: makeId('wk'),
+        name: orig.name + ' (Copie)',
+        exerciseIds: [...(orig.exerciseIds || [])],
+        createdAt: Date.now()
+      };
+      await storePut('workouts', clone);
+      await reloadStores();
+      renderWorkoutsView();
+      showToast('Séance dupliquée');
+    }
+
+    async function removeWorkoutItem(id) {
+      const wk = workoutsStore.find((w) => w.id === id);
+      if (!wk) return;
+      const ok = await askConfirm('Supprimer la séance ?', `Voulez-vous supprimer « ${wk.name} » ?`, 'Supprimer');
+      if (!ok) return;
+      await storeDelete('workouts', id);
+      await reloadStores();
+      renderWorkoutsView();
+      showToast('Séance supprimée', 'info');
+    }
+
+    /**
+     * =========================================================================
+     * 7. ONGLET 2 : CRÉATEUR DE SÉANCES
+     * =========================================================================
+     */
+    let builderEditId = null;
+    let builderSelectedIds = [];
+
+    function openNewWorkoutBuilder() {
+      builderEditId = null;
+      builderSelectedIds = [];
+      document.getElementById('builder-heading').textContent = 'Créer une séance';
+      document.getElementById('builder-name').value = '';
+      document.getElementById('builder-prep').value = 10;
+      document.getElementById('builder-work').value = 40;
+      document.getElementById('builder-rest').value = 20;
+      document.getElementById('builder-rounds').value = 4;
+      document.getElementById('builder-round-rest').value = 20;
+      switchTab('builder');
+    }
+
+    function openEditWorkoutBuilder(id) {
+      const wk = workoutsStore.find((w) => w.id === id);
+      if (!wk) return;
+      builderEditId = wk.id;
+      builderSelectedIds = [...(wk.exerciseIds || [])];
+      document.getElementById('builder-heading').textContent = 'Modifier la séance';
+      document.getElementById('builder-name').value = wk.name;
+      document.getElementById('builder-prep').value = wk.prepTime;
+      document.getElementById('builder-work').value = wk.workTime;
+      document.getElementById('builder-rest').value = wk.restTime;
+      document.getElementById('builder-rounds').value = wk.rounds;
+      document.getElementById('builder-round-rest').value = wk.roundRestTime || 0;
+      switchTab('builder');
+    }
+
+    function applyBuilderPreset(prep, work, rest, rounds) {
+      document.getElementById('builder-prep').value = prep;
+      document.getElementById('builder-work').value = work;
+      document.getElementById('builder-rest').value = rest;
+      document.getElementById('builder-rounds').value = rounds;
+      updateBuilderDuration();
+      showToast('Préréglage appliqué', 'info');
+    }
+
+    function updateBuilderDuration() {
+      const tempWk = {
+        prepTime: Number(document.getElementById('builder-prep').value) || 0,
+        workTime: Number(document.getElementById('builder-work').value) || 0,
+        restTime: Number(document.getElementById('builder-rest').value) || 0,
+        rounds: Math.max(1, Number(document.getElementById('builder-rounds').value) || 1),
+        roundRestTime: Number(document.getElementById('builder-round-rest').value) || 0,
+        exerciseIds: builderSelectedIds
+      };
+      document.getElementById('builder-total-duration').textContent = formatMMSS(computeWorkoutSeconds(tempWk));
+    }
+
+    function addBuilderExercise(exId) {
+      builderSelectedIds.push(exId);
+      renderBuilderSelected();
+      updateBuilderDuration();
+    }
+
+    function removeBuilderExercise(index) {
+      builderSelectedIds.splice(index, 1);
+      renderBuilderSelected();
+      updateBuilderDuration();
+    }
+
+    function moveBuilderExercise(index, delta) {
+      const target = index + delta;
+      if (target < 0 || target >= builderSelectedIds.length) return;
+      const tmp = builderSelectedIds[index];
+      builderSelectedIds[index] = builderSelectedIds[target];
+      builderSelectedIds[target] = tmp;
+      renderBuilderSelected();
+    }
+
+    function clearBuilderSelection() {
+      builderSelectedIds = [];
+      renderBuilderSelected();
+      updateBuilderDuration();
+    }
+
+    function renderBuilderSelected() {
+      const container = document.getElementById('builder-selected-list');
+      document.getElementById('builder-selected-count').textContent = builderSelectedIds.length;
+
+      if (builderSelectedIds.length === 0) {
+        container.innerHTML = `<div style="border:2px dashed var(--border); border-radius:12px; padding:26px 14px; text-align:center; font-size:0.82rem; color:var(--text-dim);">Aucun exercice dans cette séance.<br/>Appuyez sur <strong>+ Ajouter</strong> dans la liste.</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      builderSelectedIds.forEach((exId, idx) => {
+        const ex = exercisesStore.find((e) => e.id === exId);
+        const row = document.createElement('div');
+        row.className = 'selected-ex-item';
+        row.innerHTML = `
+          <div style="display:flex; align-items:center; gap:9px; min-width:0; flex:1;">
+            <span class="step-badge mono">${idx + 1}</span>
+            <span style="font-size:0.86rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(ex ? ex.name : 'Exercice supprimé')}</span>
+          </div>
+          <div style="display:flex; gap:4px; flex-shrink:0;">
+            <button type="button" class="icon-btn" style="min-width:34px; min-height:34px;" ${idx === 0 ? 'disabled' : ''} onclick="moveBuilderExercise(${idx}, -1)" title="Monter">↑</button>
+            <button type="button" class="icon-btn" style="min-width:34px; min-height:34px;" ${idx === builderSelectedIds.length - 1 ? 'disabled' : ''} onclick="moveBuilderExercise(${idx}, 1)" title="Descendre">↓</button>
+            <button type="button" class="icon-btn icon-btn-del" style="min-width:34px; min-height:34px;" onclick="removeBuilderExercise(${idx})" title="Retirer">✕</button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function renderBuilderPicker() {
+      const list = document.getElementById('builder-picker-list');
+      const query = (document.getElementById('builder-search').value || '').toLowerCase().trim();
+      const filtered = exercisesStore.filter((e) => e.name.toLowerCase().includes(query));
+
+      list.innerHTML = '';
+      if (filtered.length === 0) {
+        list.innerHTML = `<p style="font-size:0.8rem; color:var(--text-dim); text-align:center; padding:18px;">Aucun exercice trouvé.</p>`;
+        return;
+      }
+
+      filtered.forEach((ex) => {
+        const row = document.createElement('div');
+        row.className = 'picker-item';
+
+        const thumb = document.createElement('div');
+        thumb.className = 'picker-thumb';
+        thumb.appendChild(buildMediaNode(ex));
+
+        const info = document.createElement('div');
+        info.style.cssText = 'flex:1; min-width:0;';
+        info.innerHTML = `
+          <div style="font-size:0.85rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(ex.name)}</div>
+          <div style="font-size:0.72rem; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(ex.notes || 'Aucune consigne')}</div>
+        `;
+
+        const addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.className = 'btn-secondary';
+        addBtn.style.cssText = 'min-height:34px; padding:5px 10px; font-size:0.76rem; color:#34d399;';
+        addBtn.textContent = '+ Ajouter';
+        addBtn.onclick = () => addBuilderExercise(ex.id);
+
+        row.appendChild(thumb);
+        row.appendChild(info);
+        row.appendChild(addBtn);
+        list.appendChild(row);
+      });
+    }
+
+    async function saveBuilderWorkout() {
+      const name = document.getElementById('builder-name').value.trim();
+      if (!name) {
+        showToast('Entrez un nom pour la séance', 'error');
+        document.getElementById('builder-name').focus();
+        return;
+      }
+      if (builderSelectedIds.length === 0) {
+        showToast('Ajoutez au moins un exercice', 'error');
+        return;
+      }
+
+      const prev = builderEditId ? workoutsStore.find((w) => w.id === builderEditId) : null;
+      const workoutObj = {
+        id: builderEditId || makeId('wk'),
+        name,
+        prepTime: Math.max(0, Number(document.getElementById('builder-prep').value) || 0),
+        workTime: Math.max(5, Number(document.getElementById('builder-work').value) || 30),
+        restTime: Math.max(0, Number(document.getElementById('builder-rest').value) || 0),
+        rounds: Math.max(1, Number(document.getElementById('builder-rounds').value) || 1),
+        roundRestTime: Math.max(0, Number(document.getElementById('builder-round-rest').value) || 0),
+        exerciseIds: [...builderSelectedIds],
+        createdAt: prev ? prev.createdAt : Date.now()
+      };
+
+      await storePut('workouts', workoutObj);
+      await reloadStores();
+      showToast(builderEditId ? 'Séance mise à jour !' : 'Séance enregistrée !');
+      switchTab('workouts');
+    }
+
+    /**
+     * =========================================================================
+     * 8. ONGLET 3 : BIBLIOTHÈQUE D'EXERCICES
+     * =========================================================================
+     */
+    let pendingMediaBlob = null;
+    let pendingMediaDataUrl = null;
+    let pendingMediaType = null;
+
+    function handleExerciseMediaChange(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      pendingMediaBlob = file;
+      pendingMediaDataUrl = null;
+      pendingMediaType = file.type || '';
+      updateExerciseMediaPreview();
+    }
+
+    function clearExerciseFormMedia() {
+      pendingMediaBlob = null;
+      pendingMediaDataUrl = null;
+      pendingMediaType = null;
+      document.getElementById('ex-media-input').value = '';
+      updateExerciseMediaPreview();
+    }
+
+    function updateExerciseMediaPreview() {
+      const placeholder = document.getElementById('ex-media-placeholder');
+      const preview = document.getElementById('ex-media-preview');
+      const clearBtn = document.getElementById('ex-clear-media-btn');
+
+      preview.innerHTML = '';
+      if (pendingMediaBlob || pendingMediaDataUrl) {
+        placeholder.classList.add('hidden');
+        preview.classList.remove('hidden');
+        clearBtn.classList.remove('hidden');
+        const node = buildMediaNode({
+          mediaBlob: pendingMediaBlob,
+          mediaDataUrl: pendingMediaDataUrl,
+          mediaType: pendingMediaType
+        });
+        node.style.cssText = 'width:100%; height:100%; object-fit:contain;';
+        preview.appendChild(node);
+      } else {
+        placeholder.classList.remove('hidden');
+        preview.classList.add('hidden');
+        clearBtn.classList.add('hidden');
+      }
+    }
+
+    function resetExerciseForm() {
+      document.getElementById('ex-edit-id').value = '';
+      document.getElementById('ex-name-input').value = '';
+      document.getElementById('ex-notes-input').value = '';
+      document.getElementById('ex-form-heading').textContent = 'Nouvel exercice';
+      document.getElementById('ex-form-reset-btn').classList.add('hidden');
+      clearExerciseFormMedia();
+    }
+
+    function startEditExercise(id) {
+      const ex = exercisesStore.find((e) => e.id === id);
+      if (!ex) return;
+      document.getElementById('ex-edit-id').value = ex.id;
+      document.getElementById('ex-name-input').value = ex.name;
+      document.getElementById('ex-notes-input').value = ex.notes || '';
+      document.getElementById('ex-form-heading').textContent = 'Modifier l’exercice';
+      document.getElementById('ex-form-reset-btn').classList.remove('hidden');
+
+      pendingMediaBlob = ex.mediaBlob || null;
+      pendingMediaDataUrl = ex.mediaDataUrl || null;
+      pendingMediaType = ex.mediaType || null;
+      updateExerciseMediaPreview();
+
+      document.getElementById('exercise-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function handleSaveExercise(event) {
+      event.preventDefault();
+      const id = document.getElementById('ex-edit-id').value;
+      const name = document.getElementById('ex-name-input').value.trim();
+      const notes = document.getElementById('ex-notes-input').value.trim();
+      if (!name) return;
+
+      const prev = id ? exercisesStore.find((e) => e.id === id) : null;
+      const exObj = {
+        id: id || makeId('ex'),
+        name,
+        notes,
+        mediaBlob: pendingMediaBlob,
+        mediaDataUrl: pendingMediaDataUrl,
+        mediaType: pendingMediaType,
+        createdAt: prev ? prev.createdAt : Date.now()
+      };
+
+      await storePut('exercises', exObj);
+      await reloadStores();
+      resetExerciseForm();
+      renderLibraryGrid();
+      showToast(id ? 'Exercice modifié !' : 'Exercice ajouté !');
+    }
+
+    async function removeExerciseItem(id) {
+      const ex = exercisesStore.find((e) => e.id === id);
+      if (!ex) return;
+      const ok = await askConfirm('Supprimer l’exercice ?', `Supprimer « ${ex.name} » de la bibliothèque ?`, 'Supprimer');
+      if (!ok) return;
+      await storeDelete('exercises', id);
+      await reloadStores();
+      renderLibraryGrid();
+      showToast('Exercice supprimé', 'info');
+    }
+
+    function renderLibraryGrid() {
+      const grid = document.getElementById('library-grid');
+      const query = (document.getElementById('library-search').value || '').toLowerCase().trim();
+      const filtered = exercisesStore.filter((e) =>
+        e.name.toLowerCase().includes(query) || (e.notes || '').toLowerCase().includes(query)
+      );
+
+      grid.innerHTML = '';
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="card" style="grid-column:1/-1; text-align:center; color:var(--text-dim); font-size:0.85rem;">Aucun exercice trouvé.</div>`;
+        return;
+      }
+
+      filtered.forEach((ex) => {
+        const card = document.createElement('div');
+        card.className = 'ex-card';
+
+        const mediaWrap = document.createElement('div');
+        mediaWrap.className = 'ex-card-media';
+        mediaWrap.appendChild(buildMediaNode(ex));
+
+        const body = document.createElement('div');
+        body.className = 'ex-card-body';
+        body.innerHTML = `
+          <div>
+            <div style="font-size:0.95rem; font-weight:800; color:#ffffff;">${escapeHtml(ex.name)}</div>
+            <p style="font-size:0.78rem; color:var(--text-muted); margin-top:4px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(ex.notes || 'Aucune consigne.')}</p>
+          </div>
+          <div style="display:flex; gap:8px; justify-content:flex-end; padding-top:8px; border-top:1px solid var(--border);">
+            <button type="button" class="btn-secondary" style="min-height:34px; padding:5px 10px; font-size:0.76rem;" onclick="startEditExercise('${ex.id}')">Modifier</button>
+            <button type="button" class="btn-danger" style="min-height:34px; padding:5px 10px; font-size:0.76rem;" onclick="removeExerciseItem('${ex.id}')">Supprimer</button>
+          </div>
+        `;
+
+        card.appendChild(mediaWrap);
+        card.appendChild(body);
+        grid.appendChild(card);
+      });
+    }
+
+    /**
+     * =========================================================================
+     * 9. AUDIO WEB API (BIPS SANS FICHIER EXTERNE)
+     * =========================================================================
+     */
+    let audioContext = null;
+    let soundMuted = false;
+
+    function unlockAudio() {
+      try {
+        if (!audioContext) {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (Ctx) audioContext = new Ctx();
+        }
+        if (audioContext && audioContext.state === 'suspended') {
+          audioContext.resume();
+        }
+      } catch (e) {}
+    }
+
+    function playBeep(freq, duration, delay = 0, type = 'sine', gainVal = 0.35) {
+      if (soundMuted) return;
+      try {
+        unlockAudio();
+        if (!audioContext) return;
+        const start = audioContext.currentTime + delay;
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.001, start);
+        gain.gain.exponentialRampToValueAtTime(gainVal, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start(start);
+        osc.stop(start + duration + 0.02);
+      } catch (e) {}
+    }
+
+    function beepCountdown() {
+      playBeep(587.33, 0.13, 0, 'triangle', 0.35);
+    }
+
+    function beepStartWork() {
+      playBeep(659.25, 0.11, 0, 'sine', 0.45);
+      playBeep(880.0, 0.25, 0.12, 'sine', 0.5);
+    }
+
+    function beepStartRest() {
+      playBeep(659.25, 0.12, 0, 'sine', 0.35);
+      playBeep(440.0, 0.24, 0.14, 'sine', 0.35);
+    }
+
+    function beepFinished() {
+      playBeep(523.25, 0.13, 0, 'triangle', 0.45);
+      playBeep(659.25, 0.13, 0.14, 'triangle', 0.45);
+      playBeep(783.99, 0.13, 0.28, 'triangle', 0.45);
+      playBeep(1046.5, 0.42, 0.42, 'triangle', 0.5);
+    }
+
+    function togglePlayerMute() {
+      soundMuted = !soundMuted;
+      refreshMuteButton();
+      if (!soundMuted) beepCountdown();
+    }
+
+    function refreshMuteButton() {
+      const btn = document.getElementById('btn-player-mute');
+      if (!btn) return;
+      btn.innerHTML = soundMuted
+        ? '<svg width="19" height="19" fill="none" stroke="#fb7185" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>'
+        : '<svg width="19" height="19" fill="none" stroke="#34d399" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>';
+    }
+
+    /**
+     * =========================================================================
+     * 10. LECTEUR D'ENTRAÎNEMENT PLEIN ÉCRAN & WAKE LOCK
+     * =========================================================================
+     */
+    let currentSteps = [];
+    let stepIdx = 0;
+    let remainingSec = 0;
+    let timerRunning = false;
+    let tickerId = null;
+    let lastSecondBeeped = null;
+    let screenWakeLock = null;
+
+    function updateWakeLockBadge(active) {
+      const dot = document.getElementById('wakelock-dot');
+      const label = document.getElementById('wakelock-label');
+      if (!dot || !label) return;
+      if (active) {
+        dot.style.background = '#10b981';
+        label.textContent = 'Écran maintenu allumé';
+      } else {
+        dot.style.background = '#94a3b8';
+        label.textContent = 'Veille normale';
+      }
+    }
+
+    async function acquireWakeLock() {
+      try {
+        if ('wakeLock' in navigator && !screenWakeLock) {
+          screenWakeLock = await navigator.wakeLock.request('screen');
+          updateWakeLockBadge(true);
+          screenWakeLock.addEventListener('release', () => {
+            screenWakeLock = null;
+            updateWakeLockBadge(false);
+          });
+        }
+      } catch (e) {
+        updateWakeLockBadge(false);
+      }
+    }
+
+    function releaseWakeLock() {
+      try {
+        if (screenWakeLock) {
+          screenWakeLock.release();
+          screenWakeLock = null;
+        }
+      } catch (e) {}
+      updateWakeLockBadge(false);
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && timerRunning) {
+        acquireWakeLock();
+      }
+    });
+
+    async function togglePlayerFullscreen() {
+      try {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          const root = document.documentElement;
+          if (root.requestFullscreen) await root.requestFullscreen();
+          else if (root.webkitRequestFullscreen) await root.webkitRequestFullscreen();
+        } else {
+          if (document.exitFullscreen) await document.exitFullscreen();
+          else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+        }
+      } catch (e) {
+        showToast('Plein écran non autorisé dans cet aperçu', 'info');
+      }
+    }
+
+    function buildTimelineSteps(wk) {
+      const exList = (wk.exerciseIds || [])
+        .map((id) => exercisesStore.find((e) => e.id === id))
+        .filter(Boolean);
+      if (exList.length === 0) return [];
+
+      const steps = [];
+      const prep = Number(wk.prepTime) || 0;
+      const work = Math.max(5, Number(wk.workTime) || 30);
+      const rest = Number(wk.restTime) || 0;
+      const rounds = Math.max(1, Number(wk.rounds) || 1);
+      const roundRest = Number(wk.roundRestTime) || 0;
+
+      if (prep > 0) {
+        steps.push({
+          type: 'PREP',
+          label: 'PRÉPARATION',
+          duration: prep,
+          exercise: exList[0],
+          nextExercise: exList[0],
+          round: 1,
+          totalRounds: rounds,
+          exNum: 1,
+          totalEx: exList.length
+        });
+      }
+
+      for (let r = 1; r <= rounds; r++) {
+        for (let i = 0; i < exList.length; i++) {
+          const ex = exList[i];
+          const isLastEx = i === exList.length - 1;
+          const isLastRound = r === rounds;
+          const nextEx = !isLastEx ? exList[i + 1] : (!isLastRound ? exList[0] : null);
+
+          steps.push({
+            type: 'WORK',
+            label: 'EFFORT',
+            duration: work,
+            exercise: ex,
+            nextExercise: nextEx,
+            round: r,
+            totalRounds: rounds,
+            exNum: i + 1,
+            totalEx: exList.length
+          });
+
+          if (!isLastEx && rest > 0) {
+            steps.push({
+              type: 'REST',
+              label: 'RÉCUPÉRATION',
+              duration: rest,
+              exercise: nextEx,
+              nextExercise: nextEx,
+              round: r,
+              totalRounds: rounds,
+              exNum: i + 1,
+              totalEx: exList.length
+            });
+          } else if (isLastEx && !isLastRound && roundRest > 0) {
+            steps.push({
+              type: 'REST',
+              label: 'REPOS FIN DE TOUR',
+              duration: roundRest,
+              exercise: nextEx,
+              nextExercise: nextEx,
+              round: r,
+              totalRounds: rounds,
+              exNum: exList.length,
+              totalEx: exList.length
+            });
+          }
+        }
+      }
+
+      steps.push({
+        type: 'DONE',
+        label: 'SÉANCE TERMINÉE',
+        duration: 0,
+        exercise: null,
+        nextExercise: null,
+        round: rounds,
+        totalRounds: rounds,
+        exNum: exList.length,
+        totalEx: exList.length
+      });
+
+      return steps;
+    }
+
+    function launchWorkout(id) {
+      const wk = workoutsStore.find((w) => w.id === id);
+      if (!wk) return;
+      const steps = buildTimelineSteps(wk);
+      if (steps.length === 0) {
+        showToast('Cette séance ne contient aucun exercice valide', 'error');
+        return;
+      }
+
+      unlockAudio();
+      acquireWakeLock();
+
+      currentSteps = steps;
+      stepIdx = 0;
+      lastSecondBeeped = null;
+
+      document.getElementById('player-title').textContent = wk.name;
+      const overlay = document.getElementById('workout-player');
+      overlay.classList.add('open');
+      try {
+        history.pushState({ playerOpen: true }, '');
+      } catch (e) {}
+
+      refreshMuteButton();
+      applyStep(0, true);
+      startClockLoop();
+    }
+
+    function applyStep(index, withSound) {
+      releaseTrackedUrls();
+      stepIdx = index;
+      const step = currentSteps[stepIdx];
+      remainingSec = step.duration;
+      lastSecondBeeped = null;
+
+      const overlay = document.getElementById('workout-player');
+      overlay.classList.remove('phase-prep', 'phase-work', 'phase-rest', 'phase-done');
+      const ring = document.getElementById('player-ring');
+
+      document.getElementById('player-phase-badge').textContent = step.label;
+      document.getElementById('player-round-badge').textContent = `Tour ${step.round}/${step.totalRounds} • Ex ${step.exNum}/${step.totalEx}`;
+
+      const upnextBox = document.getElementById('player-upnext');
+      const mediaCard = document.getElementById('player-media-card');
+      const stage = document.getElementById('player-media-stage');
+      stage.innerHTML = '';
+
+      if (step.type === 'PREP') {
+        overlay.classList.add('phase-prep');
+        ring.setAttribute('stroke', '#3b82f6');
+        showUpNext(step.nextExercise);
+        mediaCard.classList.remove('hidden');
+        stage.appendChild(buildMediaNode(step.exercise));
+        document.getElementById('player-ex-name').textContent = step.exercise ? step.exercise.name : '';
+        document.getElementById('player-ex-notes').textContent = step.exercise ? step.exercise.notes : '';
+      } else if (step.type === 'WORK') {
+        overlay.classList.add('phase-work');
+        ring.setAttribute('stroke', '#10b981');
+        upnextBox.classList.add('hidden');
+        mediaCard.classList.remove('hidden');
+        stage.appendChild(buildMediaNode(step.exercise));
+        document.getElementById('player-ex-name').textContent = step.exercise ? step.exercise.name : '';
+        document.getElementById('player-ex-notes').textContent = step.exercise ? step.exercise.notes : '';
+        if (withSound) beepStartWork();
+      } else if (step.type === 'REST') {
+        overlay.classList.add('phase-rest');
+        ring.setAttribute('stroke', '#f59e0b');
+        showUpNext(step.nextExercise);
+        if (step.nextExercise) {
+          mediaCard.classList.remove('hidden');
+          stage.appendChild(buildMediaNode(step.nextExercise));
+          document.getElementById('player-ex-name').textContent = 'Préparez : ' + step.nextExercise.name;
+          document.getElementById('player-ex-notes').textContent = step.nextExercise.notes || '';
+        } else {
+          mediaCard.classList.add('hidden');
+        }
+        if (withSound) beepStartRest();
+      } else {
+        overlay.classList.add('phase-done');
+        ring.setAttribute('stroke', '#818cf8');
+        upnextBox.classList.add('hidden');
+        mediaCard.classList.remove('hidden');
+        stage.innerHTML = '<div style="font-size:3rem;">🏆</div>';
+        document.getElementById('player-ex-name').textContent = 'Bravo, séance accomplie !';
+        document.getElementById('player-ex-notes').textContent = 'Pensez à vous hydrater et à récupérer.';
+        stopClockLoop();
+        releaseWakeLock();
+        if (withSound) beepFinished();
+      }
+
+      renderClockDigits();
+    }
+
+    function showUpNext(nextEx) {
+      const box = document.getElementById('player-upnext');
+      if (!nextEx) {
+        box.classList.add('hidden');
+        return;
+      }
+      box.classList.remove('hidden');
+      document.getElementById('player-upnext-name').textContent = nextEx.name;
+      document.getElementById('player-upnext-notes').textContent = nextEx.notes || 'Préparez votre position.';
+      const thumb = document.getElementById('player-upnext-thumb');
+      thumb.innerHTML = '';
+      thumb.appendChild(buildMediaNode(nextEx));
+    }
+
+    function renderClockDigits() {
+      const step = currentSteps[stepIdx];
+      const digitsEl = document.getElementById('player-digits');
+      const unitEl = document.getElementById('player-unit');
+      const ringEl = document.getElementById('player-ring');
+
+      if (!step || step.type === 'DONE') {
+        digitsEl.textContent = 'FIN';
+        unitEl.textContent = 'bravo';
+        ringEl.setAttribute('stroke-dashoffset', '0');
+        document.getElementById('player-progress-bar').style.width = '100%';
+        document.getElementById('player-remaining-total').textContent = 'Reste 00:00';
+        return;
+      }
+
+      const ceil = Math.max(0, Math.ceil(remainingSec));
+      digitsEl.textContent = String(ceil).padStart(2, '0');
+      unitEl.textContent = ceil > 1 ? 'secondes' : 'seconde';
+
+      const circumference = 326.72;
+      const ratio = step.duration > 0 ? Math.max(0, remainingSec / step.duration) : 0;
+      ringEl.setAttribute('stroke-dashoffset', String(circumference * (1 - ratio)));
+
+      let totalRem = remainingSec;
+      for (let i = stepIdx + 1; i < currentSteps.length; i++) {
+        totalRem += currentSteps[i].duration;
+      }
+      const fullDuration = currentSteps.reduce((acc, s) => acc + s.duration, 0);
+      const pct = fullDuration > 0 ? Math.min(100, ((fullDuration - totalRem) / fullDuration) * 100) : 100;
+      document.getElementById('player-progress-bar').style.width = pct + '%';
+      document.getElementById('player-remaining-total').textContent = 'Reste ' + formatMMSS(totalRem);
+    }
+
+    function startClockLoop() {
+      if (tickerId) clearInterval(tickerId);
+      timerRunning = true;
+      acquireWakeLock();
+      updatePlayButtonIcon();
+
+      let prevTime = performance.now();
+      tickerId = setInterval(() => {
+        if (!timerRunning) {
+          prevTime = performance.now();
+          return;
+        }
+        const now = performance.now();
+        const dt = (now - prevTime) / 1000;
+        prevTime = now;
+
+        const step = currentSteps[stepIdx];
+        if (!step || step.type === 'DONE') {
+          stopClockLoop();
+          return;
+        }
+
+        remainingSec -= dt;
+        const secCeil = Math.ceil(remainingSec);
+        if (secCeil <= 3 && secCeil >= 1 && secCeil !== lastSecondBeeped) {
+          lastSecondBeeped = secCeil;
+          beepCountdown();
+        }
+
+        if (remainingSec <= 0) {
+          if (stepIdx + 1 < currentSteps.length) {
+            applyStep(stepIdx + 1, true);
+          } else {
+            stopClockLoop();
+          }
+        } else {
+          renderClockDigits();
+        }
+      }, 100);
+    }
+
+    function stopClockLoop() {
+      timerRunning = false;
+      if (tickerId) {
+        clearInterval(tickerId);
+        tickerId = null;
+      }
+      updatePlayButtonIcon();
+    }
+
+    function togglePlayPause() {
+      const step = currentSteps[stepIdx];
+      if (step && step.type === 'DONE') {
+        resetPlayer();
+        return;
+      }
+      if (timerRunning) {
+        timerRunning = false;
+        releaseWakeLock();
+        updatePlayButtonIcon();
+      } else {
+        unlockAudio();
+        acquireWakeLock();
+        if (!tickerId) startClockLoop();
+        else {
+          timerRunning = true;
+          updatePlayButtonIcon();
+        }
+      }
+    }
+
+    function updatePlayButtonIcon() {
+      const btn = document.getElementById('btn-player-playpause');
+      if (!btn) return;
+      btn.innerHTML = timerRunning
+        ? '<svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'
+        : '<svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24" style="margin-left:3px;"><path d="M8 5v14l11-7z"/></svg>';
+    }
+
+    function stepPlayer(delta) {
+      const next = stepIdx + delta;
+      if (next >= 0 && next < currentSteps.length) {
+        applyStep(next, true);
+      }
+    }
+
+    function resetPlayer() {
+      applyStep(0, false);
+      if (!timerRunning) startClockLoop();
+    }
+
+    async function requestExitWorkout() {
+      const step = currentSteps[stepIdx];
+      if (!step || step.type === 'DONE') {
+        exitWorkoutImmediate();
+        return;
+      }
+      const wasRunning = timerRunning;
+      timerRunning = false;
+      updatePlayButtonIcon();
+
+      const ok = await askConfirm('Quitter la séance ?', 'Votre chronomètre en cours sera arrêté.', 'Quitter');
+      if (ok) {
+        exitWorkoutImmediate();
+      } else if (wasRunning) {
+        timerRunning = true;
+        updatePlayButtonIcon();
+      }
+    }
+
+    function exitWorkoutImmediate() {
+      stopClockLoop();
+      releaseWakeLock();
+      releaseTrackedUrls();
+      try {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
+      } catch (e) {}
+      document.getElementById('workout-player').classList.remove('open');
+    }
+
+    /**
+     * =========================================================================
+     * 11. EXPORT / IMPORT JSON & RÉINITIALISATION DES 5 SÉANCES
+     * =========================================================================
+     */
+    function openBackupModal() {
+      document.getElementById('backup-stats').textContent = `${workoutsStore.length} séance(s) • ${exercisesStore.length} exercice(s)`;
+      openModal('backup-modal');
+    }
+
+    function blobToDataURL(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function exportBackupJSON() {
+      const btn = document.getElementById('btn-export-json');
+      btn.disabled = true;
+      btn.textContent = 'Export...';
+      try {
+        const serializedExercises = [];
+        for (const ex of exercisesStore) {
+          let dataUrl = ex.mediaDataUrl || null;
+          if (!dataUrl && ex.mediaBlob instanceof Blob) {
+            dataUrl = await blobToDataURL(ex.mediaBlob);
+          }
+          serializedExercises.push({
+            id: ex.id,
+            name: ex.name,
+            notes: ex.notes || '',
+            mediaType: ex.mediaType || '',
+            mediaDataUrl: dataUrl,
+            createdAt: ex.createdAt || Date.now()
+          });
+        }
+
+        const payload = {
+          app: 'PulseHIIT',
+          version: 2,
+          exportedAt: new Date().toISOString(),
+          exercises: serializedExercises,
+          workouts: workoutsStore
+        };
+
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pulsehiit-sauvegarde-' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Sauvegarde JSON téléchargée !');
+      } catch (err) {
+        showToast('Erreur lors de l’export JSON', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Exporter';
+      }
+    }
+
+    async function importBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (!data || !Array.isArray(data.exercises) || !Array.isArray(data.workouts)) {
+          throw new Error('Format JSON invalide');
+        }
+
+        for (const ex of data.exercises) {
+          await storePut('exercises', {
+            id: ex.id || makeId('ex'),
+            name: ex.name || 'Exercice importé',
+            notes: ex.notes || '',
+            mediaBlob: null,
+            mediaDataUrl: ex.mediaDataUrl || ex.mediaBase64 || null,
+            mediaType: ex.mediaType || '',
+            createdAt: ex.createdAt || Date.now()
+          });
+        }
+
+        for (const wk of data.workouts) {
+          await storePut('workouts', {
+            id: wk.id || makeId('wk'),
+            name: wk.name || 'Séance importée',
+            prepTime: Number(wk.prepTime) || 10,
+            workTime: Number(wk.workTime) || 30,
+            restTime: Number(wk.restTime) || 15,
+            rounds: Number(wk.rounds) || 3,
+            roundRestTime: Number(wk.roundRestTime) || 0,
+            exerciseIds: Array.isArray(wk.exerciseIds) ? wk.exerciseIds : [],
+            createdAt: wk.createdAt || Date.now()
+          });
+        }
+
+        await reloadStores();
+        closeModal('backup-modal');
+        switchTab('workouts');
+        showToast(`Import réussi (${data.workouts.length} séances) !`);
+      } catch (err) {
+        showToast('Fichier JSON non reconnu', 'error');
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    async function restoreDefaultProgram() {
+      const ok = await askConfirm(
+        'Recharger les 5 séances ?',
+        'Cette action restaure les 5 séances et les 22 exercices d’origine.',
+        'Réinitialiser'
+      );
+      if (!ok) return;
+
+      await storeClear('exercises');
+      await storeClear('workouts');
+      const { exercises, workouts } = buildDefaultCatalog();
+      for (const ex of exercises) await storePut('exercises', ex);
+      for (const wk of workouts) await storePut('workouts', wk);
+
+      await reloadStores();
+      closeModal('backup-modal');
+      switchTab('workouts');
+      showToast('Les 5 séances par défaut ont été rechargées !');
+    }
+
+    /**
+     * =========================================================================
+     * 12. MANIFESTE PWA DYNAMIQUE & INITIALISATION SÉCURISÉE
+     * =========================================================================
+     */
+    let deferredInstallEvent = null;
+
+    function setupPWAManifest() {
+      try {
+        const iconUrl = document.getElementById('pwa-icon-link').href;
+        const manifest = {
+          name: 'PulseHIIT — Minuteur & Séances',
+          short_name: 'PulseHIIT',
+          start_url: window.location.href,
+          display: 'standalone',
+          background_color: '#090d16',
+          theme_color: '#090d16',
+          icons: [{ src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        document.getElementById('pwa-manifest-link').href = URL.createObjectURL(blob);
+      } catch (e) {}
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallEvent = e;
+        const banner = document.getElementById('native-install-banner');
+        if (banner) banner.classList.remove('hidden');
+      });
+    }
+
+    async function triggerNativePWAInstall() {
+      if (!deferredInstallEvent) return;
+      deferredInstallEvent.prompt();
+      await deferredInstallEvent.userChoice;
+      deferredInstallEvent = null;
+      closeModal('install-modal');
+    }
+
+    async function bootstrapApp() {
+      try {
+        setupPWAManifest();
+        await openDatabase();
+        await seedIfEmpty();
+        await reloadStores();
+        switchTab('workouts');
+      } catch (err) {
+        console.error('Erreur démarrage PulseHIIT:', err);
+        const { exercises, workouts } = buildDefaultCatalog();
+        exercisesStore = exercises;
+        workoutsStore = workouts;
+        switchTab('workouts');
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootstrapApp);
+    } else {
+      bootstrapApp();
+    }
+  </script>
+</body>
+</html>
